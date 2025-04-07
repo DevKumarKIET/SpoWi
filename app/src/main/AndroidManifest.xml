@@ -55,9 +55,8 @@
             android:name=".MusicService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
-        <receiver
-            android:name=".NotificationReceiver"
-            android:exported="true" />
+        <receiver android:name=".NotificationReceiver" />
+
     </application>
 
 </manifest>

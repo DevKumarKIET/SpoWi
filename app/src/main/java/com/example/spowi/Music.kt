@@ -1,5 +1,6 @@
 package com.example.spowi
 
+import android.media.MediaMetadataRetriever
 import java.util.concurrent.TimeUnit
 
 //Data Class song ka naam , duration singer, album in sbb k liye....
@@ -21,4 +22,24 @@ fun formatDuration(duration: Long): String {
         TimeUnit.MILLISECONDS
     ) - minutes * TimeUnit.SECONDS.convert(1, TimeUnit.MINUTES))
     return String.format("%02d:%02d", minutes, seconds)
+}
+
+fun getImgArt(path:String): ByteArray? {
+    val retriever = MediaMetadataRetriever()
+    retriever.setDataSource(path)
+    return retriever.embeddedPicture
+}
+
+fun setSongPositionPA(increment: Boolean) {
+    if (increment) {
+        if (PlayerActivity.musicListPA.size - 1 == PlayerActivity.songPosition)
+            PlayerActivity.songPosition = 0
+        else
+            ++PlayerActivity.songPosition
+    } else {
+        if (0 == PlayerActivity.songPosition)
+            PlayerActivity.songPosition = PlayerActivity.musicListPA.size - 1
+        else
+            --PlayerActivity.songPosition
+    }
 }

@@ -3,8 +3,8 @@ package com.example.spowi
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import android.widget.Toast
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import kotlin.system.exitProcess
 
 class NotificationReceiver : BroadcastReceiver() {
@@ -12,15 +12,16 @@ class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         when (intent?.action) {
             ApplicationClass.PREVIOUS -> {
-                Toast.makeText(context, "Previous Clicked", Toast.LENGTH_SHORT).show()
-                Log.d("NotificationReceiver", "Previous clicked")
+                prevNextSong(increment = false , context = context!!)
             }
 
             ApplicationClass.PLAY ->
                 if (PlayerActivity.isPlaying) pauseMusic()
                 else playMusic()
 
-            ApplicationClass.NEXT -> Toast.makeText(context, "Next Clicked", Toast.LENGTH_SHORT).show()
+            ApplicationClass.NEXT -> {
+                prevNextSong(increment = true , context = context!!)
+            }
 
             ApplicationClass.EXIT -> {
                 PlayerActivity.musicServicePA?.stopForeground(true)
@@ -44,4 +45,31 @@ class NotificationReceiver : BroadcastReceiver() {
         PlayerActivity.binding.playPauseBtnPA.setIconResource(R.drawable.play_icon)
     }
 
+    private fun prevNextSong(increment:Boolean , context:Context){
+        setSongPositionPA(increment = increment)
+        PlayerActivity.musicServicePA!!.createMediaPlayer()
+        Glide.with(context)
+            .load(PlayerActivity.musicListPA[PlayerActivity.songPosition].artUri)
+            .apply(RequestOptions().placeholder(R.drawable.splash_screen).centerCrop())
+            .into(PlayerActivity.binding.songImgPA)
+        PlayerActivity.binding.songNamePA.text = PlayerActivity.musicListPA[PlayerActivity.songPosition].title
+        playMusic()
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

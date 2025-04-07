@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
@@ -30,11 +29,7 @@ class MusicService : Service() {
     fun showNotification(playPauseBtn : Int) {
         val intent = Intent(baseContext, MainActivity::class.java)
 
-        val flag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.FLAG_IMMUTABLE
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
+        val flag = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
         val contentIntent = PendingIntent.getActivity(this, 0, intent, flag)
 
@@ -50,11 +45,19 @@ class MusicService : Service() {
         val exitIntent = Intent(this,NotificationReceiver::class.java).setAction(ApplicationClass.EXIT)
         val exitPendingIntent = PendingIntent.getBroadcast(this,4,exitIntent,flag)
 
+        val imgArt = getImgArt(PlayerActivity.musicListPA[PlayerActivity.songPosition].path)
+        val image = if (imgArt!=null){
+            BitmapFactory.decodeByteArray(imgArt,0,imgArt.size)
+        }
+        else {
+            BitmapFactory.decodeResource(resources, R.drawable.splash_screen)
+        }
+
         val notification = NotificationCompat.Builder(baseContext, ApplicationClass.CHANNEL_ID)
             .setContentTitle(PlayerActivity.musicListPA[PlayerActivity.songPosition].title)
             .setContentText(PlayerActivity.musicListPA[PlayerActivity.songPosition].artist)
             .setSmallIcon(R.drawable.music_icon)
-            .setLargeIcon(BitmapFactory.decodeResource(resources,R.drawable.splash_screen))
+            .setLargeIcon(image)
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle().setMediaSession(mediaSession.sessionToken))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -67,6 +70,20 @@ class MusicService : Service() {
 
         startForeground(13,notification)
     }
+
+    fun createMediaPlayer() {
+        try {
+            if (PlayerActivity.musicServicePA!!.mediaPlayer == null) PlayerActivity.musicServicePA!!.mediaPlayer = MediaPlayer()
+            PlayerActivity.musicServicePA!!.mediaPlayer!!.reset()
+            PlayerActivity.musicServicePA!!.mediaPlayer!!.setDataSource(PlayerActivity.musicListPA[PlayerActivity.songPosition].path)
+            PlayerActivity.musicServicePA!!.mediaPlayer!!.prepare()
+            PlayerActivity.binding.playPauseBtnPA.setIconResource(R.drawable.pause_icon)
+            PlayerActivity.musicServicePA!!.showNotification(R.drawable.pause_icon)
+        } catch (e: Exception) {
+            return
+        }
+    }
+
 }
 
 
